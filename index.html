@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Asesmen PAI-BP SDN Curug Dengdeng</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0fdf4; }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-emerald-600 text-white shadow-md p-4">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-book-quran text-2xl"></i>
+                <h1 class="text-m"><b>PAI-BP</b> SDN Curug Dengdeng</h1>
+            </div>
+            <span class="text-xs bg-emerald-700 px-3 py-1 rounded-full">Terhubung</span>
+        </div>
+    </header>
+
+    <!-- Form Pencarian -->
+    <main class="max-w-md mx-auto my-8 p-6 bg-white rounded-2xl shadow-xl border border-emerald-100 flex-1 w-full">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-emerald-800">Hasil Asesmen</h2>
+            <p class="text-m text-gray-500 mt-1"><b>Pendidikan Agama Islam dan Budi Pekerti</b><br>SD Negeri Curug Dengdeng</p>
+        </div>
+
+        <form id="searchForm" onsubmit="handleSearch(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Kelas:</label>
+                <select id="kelas" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <option value="">-- pilih kelas --</option>
+                    <option value="Kelas 1A">Kelas 1A</option>
+                    <option value="Kelas 1B">Kelas 1B</option>
+                    <option value="Kelas 2A">Kelas 2A</option>
+                    <option value="Kelas 2B">Kelas 2B</option>
+                    <option value="Kelas 3A">Kelas 3A</option>
+                    <option value="Kelas 3B">Kelas 3B</option>
+                    <option value="Kelas 4A">Kelas 4A</option>
+					<option value="Kelas 4B">Kelas 4B</option>
+					<option value="Kelas 5A">Kelas 5A</option>
+					<option value="Kelas 5B">Kelas 5B</option>
+					<option value="Kelas 6A">Kelas 6A</option>
+					<option value="Kelas 6B">Kelas 6B</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap:</label>
+                <input type="text" id="nama" placeholder="-" required 
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Verifikasi:</label>
+                <input type="password" id="kode" placeholder="-" required 
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+
+            <button type="submit" id="btnSubmit" 
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Lihat</span>
+            </button>
+			
+        </form>
+    </main>
+
+    <footer class="text-center py-4 text-xs text-gray-500">Dibuat oleh:<br><b>Dede Ardi Hikmatulloh, S.Th.I</b><br>
+        &copy; Portal PAI Dasar
+    </footer>
+
+    <!-- POP-UP MODAL HASIL UJIAN -->
+    <div id="modalHasil" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
+            
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+
+            <!-- Header Modal -->
+            <div class="border-b pb-3 mb-4">
+                <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded">Lembar Laporan Hasil</span>
+                <h3 id="modalJudul" class="text-m font-bold text-gray-800 mt-2">Judul Ujian</h3>
+            </div>
+
+            <!-- Identitas Siswa -->
+            <div class="bg-gray-50 p-4 rounded-xl mb-4 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-gray-500 text-xs">Nama Lengkap:</p>
+                    <p id="modalNama" class="font-bold text-gray-800">-</p>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-xs">Kelas:</p>
+                    <p id="modalKelas" class="font-bold text-gray-800">-</p>
+                </div>
+            </div>
+
+            <!-- Tautan Naskah Soal -->
+            <div class="mb-5">
+                <a id="modalLinkSoal" href="#" target="_blank" 
+                   class="inline-flex items-center space-x-2 text-sm text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-lg font-medium border border-emerald-200 transition">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span>Buka Naskah Soal</span>
+                </a>
+            </div>
+
+            <!-- TABEL 1: Pilihan Ganda -->
+            <div class="mb-6">
+                <h4 class="font-bold text-gray-700 mb-2 text-sm flex items-center space-x-2">
+                    <i class="fa-solid fa-list-check text-emerald-600"></i>
+                    <span>Pilihan Ganda</span>
+                </h4>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600 text-xs capitalize">
+                            <tr>
+                                <th class="py-2 px-3 w-12 text-center">No.</th>
+                                <th class="py-2 px-3 text-center">Kunci Jawaban</th>
+                                <th class="py-2 px-3 text-center">Jawaban</th>
+                                <th class="py-2 px-3 text-center">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBodyPG" class="divide-y text-xs">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TABEL 2: Uraian -->
+            <div class="mb-6">
+                <h4 class="font-bold text-gray-700 mb-2 text-sm flex items-center space-x-2">
+                    <i class="fa-solid fa-pen-clip text-emerald-600"></i>
+                    <span>Isian/Uraian</span>
+                </h4>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600 text-xs capitalize">
+                            <tr>
+                                <th class="py-2 px-3 w-10 text-center">No.</th>
+                                <th class="py-2 px-3 text-center">Kunci Jawaban</th>
+                                <th class="py-2 px-3 text-center">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBodyUraian" class="divide-y text-xs">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+			
+			<!-- Ringkasan Skor -->
+            <div class="grid grid-cols-3 gap-3 text-center mb-6">
+                <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                    <p class="text-xs text-blue-600 font-semibold">Skor Pilihan Ganda</p>
+                    <p id="modalSkorPG" class="text-xl font-extrabold text-blue-700">0</p>
+                </div>
+                <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                    <p class="text-xs text-amber-600 font-semibold">Skor Isian/Uraian</p>
+                    <p id="modalSkorUraian" class="text-xl font-extrabold text-amber-700">0</p>
+                </div>
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <p class="text-xs text-emerald-600 font-semibold">Nilai</p>
+                    <p id="modalTotalNilai" class="text-2xl font-black text-emerald-700">0</p>
+                </div>
+            </div>
+			
+            <button onclick="closeModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2.5 rounded-lg transition">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx25Utm4NDSzFbpc0qav07pZ03HBsIM6KGTXEpyutkHysMLh-on88bDDfHckYABaDk_/exec";
+
+        async function handleSearch(event) {
+            event.preventDefault();
+
+            const kelas = document.getElementById('kelas').value;
+            const nama = document.getElementById('nama').value;
+            const kode = document.getElementById('kode').value;
+            const btnSubmit = document.getElementById('btnSubmit');
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Memuat data...</span>`;
+
+            try {
+                const response = await fetch(`${GAS_URL}?kelas=${encodeURIComponent(kelas)}&nama=${encodeURIComponent(nama)}&kode=${encodeURIComponent(kode)}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    renderModal(data);
+                } else {
+                    alert(data.message || 'Data tidak ditemukan!');
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan koneksi, pastikan URL Apps Script sudah terpasang dengan benar!');
+                console.error(error);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> <span>Lihat</span>`;
+            }
+        }
+
+        function renderModal(data) {
+            document.getElementById('modalJudul').innerText = data.judulUjian;
+            document.getElementById('modalNama').innerText = data.nama;
+            document.getElementById('modalKelas').innerText = data.kelas;
+            document.getElementById('modalLinkSoal').href = data.tautanSoal;
+            document.getElementById('modalSkorPG').innerText = data.skorPG;
+            document.getElementById('modalSkorUraian').innerText = data.skorUraian;
+            document.getElementById('modalTotalNilai').innerText = data.totalNilai;
+
+            // --- 1. RENDER TABEL PILIHAN GANDA (PG) ---
+            const kunciPG = data.kunciPG.trim().toUpperCase();
+            const jawabanPG = data.jawabanPG.trim().toUpperCase();
+            const tableBodyPG = document.getElementById('tableBodyPG');
+            tableBodyPG.innerHTML = '';
+
+            const totalSoalPG = Math.max(kunciPG.length, jawabanPG.length);
+            for (let i = 0; i < totalSoalPG; i++) {
+                const k = kunciPG[i] || '-';
+                const j = jawabanPG[i] || '-';
+                const isCorrect = (k !== '-' && k === j);
+
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-2 px-3 text-center font-semibold">${i + 1}</td>
+                        <td class="py-2 px-3 text-center font-mono font-bold text-blue-600">${k}</td>
+                        <td class="py-2 px-3 text-center font-mono font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'}">${j}</td>
+                        <td class="py-2 px-3 text-center">
+                            ${isCorrect 
+                                ? '<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Benar</span>' 
+                                : '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">Salah</span>'}
+                        </td>
+                    </tr>
+                `;
+                tableBodyPG.innerHTML += row;
+            }
+
+            // --- 2. RENDER TABEL URAIAN (Data statusUraian format: bbbss) ---
+            const statusUraian = data.statusUraian.trim().toLowerCase();
+            // Kunci Uraian dipisah per baris atau tanda koma/titik koma dari sheet
+            const kunciUraianArr = data.kunciUraian ? data.kunciUraian.split(/\r?\n|;/) : [];
+            const tableBodyUraian = document.getElementById('tableBodyUraian');
+            tableBodyUraian.innerHTML = '';
+
+            const totalSoalUraian = Math.max(statusUraian.length, kunciUraianArr.length);
+            for (let i = 0; i < totalSoalUraian; i++) {
+                const st = statusUraian[i] || '';
+                const isCorrect = (st === 'b');
+                const kunciTeks = kunciUraianArr[i] ? kunciUraianArr[i].trim() : (data.kunciUraian || '-');
+
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-2 px-3 text-center font-semibold">${i + 1}</td>
+                        <td class="py-2 px-3 text-gray-700">${kunciTeks}</td>
+                        <td class="py-2 px-3 text-center">
+                            ${isCorrect 
+                                ? '<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Benar</span>' 
+                                : '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">Salah</span>'}
+                        </td>
+                    </tr>
+                `;
+                tableBodyUraian.innerHTML += row;
+            }
+
+            document.getElementById('modalHasil').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modalHasil').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
