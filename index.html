@@ -173,6 +173,11 @@
                 </div>
             </div>
 			
+			<!-- BANNER & KARTU HASIL REMEDIAL -->
+            <div id="modalRemedialSection" class="mb-6 space-y-3">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </div>
+			
             <button onclick="closeModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2.5 rounded-lg transition">
                 Tutup
             </button>
@@ -219,7 +224,169 @@
             document.getElementById('modalSkorPG').innerText = data.skorPG;
             document.getElementById('modalSkorUraian').innerText = data.skorUraian;
             document.getElementById('modalTotalNilai').innerText = data.totalNilai;
+		
+		
+		// =========================================================
+            // LOGIKA PENAMPILAN NILAI ASLI & HASIL REMEDIAL
+            // =========================================================
+            const totalNilai = parseFloat(data.totalNilai) || 0;
+            const nilaiRemedialRaw = data.nilaiRemedial;
+            const statusRemedialLower = String(nilaiRemedialRaw || '').trim().toLowerCase();
+            const remedialSection = document.getElementById('modalRemedialSection');
 
+            remedialSection.innerHTML = ''; // Clear konten sebelumnya
+
+            if (totalNilai < 65) {
+
+                // KONDISI A: Keterangan di Kolom M adalah "Proses"
+                if (statusRemedialLower === 'proses') {
+                    remedialSection.innerHTML = `
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm mb-3">
+                            <div class="flex items-start space-x-3">
+                                <div class="text-amber-500 text-xl mt-0.5">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-bold text-amber-800 text-sm">Maaf, kamu belum tuntas!</h5>
+                                    <p class="text-xs text-amber-700 mt-1">
+                                        Nilai kamu belum memenuhi Kriteria Ketuntasan Minimal. Silakan kerjakan tugas remedial untuk memperbaiki nilai kamu.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-xl shadow-sm">
+                            <div class="flex items-start space-x-3">
+                                <div class="text-blue-500 text-xl mt-0.5">
+                                    <i class="fa-solid fa-hourglass-half animate-spin"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-bold text-blue-800 text-sm">Tugas Remedial Sedang Diproses</h5>
+                                    <p class="text-xs text-blue-700 mt-1">
+                                        Kamu sudah mengerjakan tugas remedial. Saat ini, tugas kamu sedang dalam proses pemeriksaan.
+                                    </p>
+                                    <div class="mt-2 inline-block bg-blue-100 text-blue-800 text-[11px] px-3 py-1 rounded-md font-semibold">
+                                        <i class="fa-solid fa-info-circle mr-1"></i> Hubungi Guru PAI-BP jika terdapat kekeliruan.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } 
+                
+                // KONDISI B: Kolom M masih kosong, "-", atau belum pernah dikerjakan
+                else if (!statusRemedialLower || statusRemedialLower === '-' || statusRemedialLower === 'undefined') {
+                    
+                    // Cek apakah tautan remedial di Kolom L ada dan valid
+                    const tautanRemedial = String(data.tautanRemedial || '').trim();
+                    const isTautanTersedia = tautanRemedial !== "" && tautanRemedial !== "-" && tautanRemedial !== "#" && tautanRemedial !== "undefined";
+
+                    // Tentukan elemen aksi: Tombol atau Pesan Pemberitahuan
+                    let aksiRemedialHtml = '';
+                    
+                    if (isTautanTersedia) {
+                        aksiRemedialHtml = `
+                            <button data-kelas="${data.kelas}" 
+                                    data-kode="${data.kodeVerifikasi}" 
+                                    data-nama="${data.nama}" 
+                                    data-url="${data.tautanRemedial}" 
+                                    onclick="mulaiRemedial(this)" 
+                                    class="inline-flex items-center space-x-2 mt-3 bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition shadow-md">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                <span>Kerjakan Remedial</span>
+                            </button>
+                        `;
+                    } else {
+                        aksiRemedialHtml = `
+                            <div class="mt-3 inline-flex items-center space-x-2 text-xs text-amber-800 bg-amber-100/80 px-3 py-2 rounded-lg font-medium border border-amber-200">
+                                <i class="fa-solid fa-circle-info text-amber-600"></i>
+                                <span>Saat ini, tugas remedial belum tersedia. Silakan, hubungi Guru PAI-BP untuk konfirmasi.</span>
+                            </div>
+                        `;
+                    }
+
+                    remedialSection.innerHTML = `
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm">
+                            <div class="flex items-start space-x-3">
+                                <div class="text-amber-500 text-xl mt-0.5">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-bold text-amber-800 text-sm">Maaf, kamu belum tuntas!</h5>
+                                    <p class="text-xs text-amber-700 mt-1">
+                                        Nilai kamu belum memenuhi Kriteria Ketuntasan Minimal. Silakan kerjakan tugas remedial untuk memperbaiki nilai kamu.
+                                    </p>
+                                    ${aksiRemedialHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // KONDISI C: Sudah ada nilai numerik hasil remedial dari guru (misal: 75, 80, 85)
+                else {
+                    const nilaiRemedial = parseFloat(nilaiRemedialRaw) || 0;
+                    const isTuntasRemedial = nilaiRemedial >= 75;
+
+                    remedialSection.innerHTML = `
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm mb-3">
+                            <div class="flex items-start space-x-3">
+                                <div class="text-amber-500 text-xl mt-0.5">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-bold text-amber-800 text-sm">Maaf, kamu belum tuntas!</h5>
+                                    <p class="text-xs text-amber-700 mt-1">
+                                        Nilai kamu belum memenuhi Kriteria Ketuntasan Minimal. Silakan kerjakan tugas remedial untuk memperbaiki nilai kamu.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl border ${isTuntasRemedial ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'} shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="${isTuntasRemedial ? 'text-emerald-600' : 'text-red-600'} text-2xl">
+                                        <i class="fa-solid ${isTuntasRemedial ? 'fa-award' : 'fa-circle-xmark'}"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-gray-800 text-sm">Tugas Remedial Sudah Selesai</h5>
+                                        <p class="text-xs ${isTuntasRemedial ? 'text-emerald-700' : 'text-red-700'} font-medium">
+                                            ${isTuntasRemedial 
+                                                ? 'Selamat, nilai remedial kamu sudah memenuhi Kriteria Ketuntasan Minimal.' 
+                                                : 'Maaf, nilai remedial kamu masih belum memenuhi Kriteria Ketuntasan Minimal.'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-gray-500 font-semibold uppercase block">Nilai</span>
+                                    <span class="text-2xl font-black ${isTuntasRemedial ? 'text-emerald-700' : 'text-red-600'}">
+                                        ${nilaiRemedial}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+            } else {
+                // TUNTAS dari awal
+                remedialSection.innerHTML = `
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl shadow-sm">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-emerald-500 text-2xl">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-emerald-800 text-sm">Selamat, kamu sudah tuntas!</h5>
+                                <p class="text-xs text-emerald-700 mt-0.5">Nilai kamu sudah memenuhi Kriteria Ketuntasan Minimal. Kamu tidak perlu mengerjakan tugas remedial apa pun untuk memperbaiki nilai.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+			
+            // =========================================================
             // --- 1. RENDER TABEL PILIHAN GANDA (PG) ---
             const kunciPG = data.kunciPG.trim().toUpperCase();
             const jawabanPG = data.jawabanPG.trim().toUpperCase();
@@ -280,6 +447,52 @@
         function closeModal() {
             document.getElementById('modalHasil').classList.add('hidden');
         }
+		
+async function mulaiRemedial(btnElement) {
+    const kelas = btnElement.getAttribute('data-kelas');
+    const kode = btnElement.getAttribute('data-kode');
+    const nama = btnElement.getAttribute('data-nama') || '';
+    const targetUrl = btnElement.getAttribute('data-url');
+
+    if (!targetUrl || targetUrl.trim() === "" || targetUrl === "undefined") {
+        alert("Tautan remedial belum tersedia, silakan hubungi Guru PAI-BP untuk konfirmasi.");
+        return;
+    }
+
+    // 1. Buka Tautan Google Form di tab baru
+    window.open(targetUrl, '_blank');
+
+    // 2. Kirim sinyal update ke Google Sheet
+    const updateStatusUrl = `${GAS_URL}?action=startRemedial&kelas=${encodeURIComponent(kelas)}&kode=${encodeURIComponent(kode)}&nama=${encodeURIComponent(nama)}`;
+
+    try {
+        const response = await fetch(updateStatusUrl);
+        const resData = await response.json();
+        console.log("Hasil update status:", resData);
+    } catch (err) {
+        console.error("Gagal memperbarui status ke Google Sheet:", err);
+    }
+
+    // 3. Perbarui tampilan modal
+    document.getElementById('modalRemedialSection').innerHTML = `
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-xl shadow-sm">
+            <div class="flex items-start space-x-3">
+                <div class="text-blue-500 text-xl mt-0.5">
+                    <i class="fa-solid fa-hourglass-half animate-spin"></i>
+                </div>
+                <div class="flex-1">
+                    <h5 class="font-bold text-blue-800 text-sm">Tugas Remedial Sedang Diproses</h5>
+                    <p class="text-xs text-blue-700 mt-1">
+                        Kamu sedang/sudah mengerjakan tugas remedial. Nilai kamu akan ditinjau oleh Guru.
+                    </p>
+                    <div class="mt-2 inline-block bg-blue-100 text-blue-800 text-[11px] px-3 py-1 rounded-md font-semibold">
+                        <i class="fa-solid fa-info-circle mr-1"></i> Mohon tidak mengerjakan tugas remedial kembali.
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
     </script>
 </body>
 </html>
